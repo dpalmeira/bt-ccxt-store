@@ -195,7 +195,7 @@ class CCXTBroker(with_metaclass(MetaCCXTBroker, BrokerBase)):
             ccxt_order = self.store.fetch_order(oID, o_order.data.p.dataname)
             
             # Check for new fills
-            if 'trades' in ccxt_order:
+            if 'trades' in ccxt_order and ccxt_order['trades'] is not None:
                 for fill in ccxt_order['trades']:
                     if fill not in o_order.executed_fills:
                         o_order.execute(fill['datetime'], fill['amount'], fill['price'], 
@@ -211,7 +211,8 @@ class CCXTBroker(with_metaclass(MetaCCXTBroker, BrokerBase)):
             # Check if the order is closed
             if ccxt_order[self.mappings['closed_order']['key']] == self.mappings['closed_order']['value']:
                 pos = self.getposition(o_order.data, clone=False)
-                pos.update(o_order.size, o_order.price)
+                #pos.update(o_order.size, o_order.price)
+                pos.update(o_order.size, o_order.ccxt_order['price'])
                 o_order.completed()
                 self.notify(o_order)
                 self.open_orders.remove(o_order)
